@@ -14,7 +14,7 @@ export default function ArtCard({ artwork, index, onClick }) {
         boxShadow: hovered ? "0 10px 30px rgba(168, 85, 247, 0.3)" : "none"
       }}
     >
-      <img src={artwork.thumb} alt={artwork.title} style={{ width: "100%", display: "block" }} />
+      <img src={artwork.src} alt={artwork.title} style={{ width: "100%", display: "block" }} />
       <div style={{
         position: "absolute", bottom: 0, left: 0, right: 0, padding: "1rem",
         background: "linear-gradient(transparent, rgba(10, 5, 16, 0.9))",
