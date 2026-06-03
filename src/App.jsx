@@ -18,7 +18,10 @@ export default function VanGoVirtual() {
   const [scrolled, setScrolled] = useState(false);
   const galleryRef = useRef(null);
 
-  // Navigation Logic
+  // Dynamic state to hold artwork data so live bids persist during browsing
+  const [galleryData, setGalleryData] = useState(ARTWORKS || []);
+
+  // 1. Navigation Logic: Detect scroll to change Navbar background style
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 50);
@@ -27,29 +30,36 @@ export default function VanGoVirtual() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Filtering Logic
-  const galleryData = ARTWORKS || [];
-  
+  // 2. Filtering Logic: Syncs smoothly with selected gallery categories
   const filtered = activeCategory === "All"
     ? galleryData
     : galleryData.filter((a) => a.category === activeCategory);
 
-  // Lightbox Navigation Logic (Left/Right)
+  // 3. Lightbox Navigation Logic (Looping left/right inside the active category)
   const navigateLightbox = (direction) => {
-    // We find the index within the CURRENTLY FILTERED list
     const currentIndex = filtered.findIndex((art) => art.id === lightbox);
     if (currentIndex === -1) return;
 
     let nextIndex = currentIndex + direction;
 
-    // Loop logic
     if (nextIndex >= filtered.length) nextIndex = 0;
     if (nextIndex < 0) nextIndex = filtered.length - 1;
 
     setLightbox(filtered[nextIndex].id);
   };
 
-  //(Arrow Keys)
+  // 4. Dynamic Live Bidding Handler
+  const handlePlaceBid = (artworkId, newBidAmount) => {
+    setGalleryData((prevData) =>
+      prevData.map((art) =>
+        art.id === artworkId
+          ? { ...art, currentBid: newBidAmount, totalBids: art.totalBids + 1 }
+          : art
+      )
+    );
+  };
+
+  // 5. Keyboard Support for premium Lightbox navigation (Arrow keys + Esc)
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (!lightbox) return;
@@ -61,13 +71,14 @@ export default function VanGoVirtual() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [lightbox, filtered]);
 
-  // Find the specific piece to display
+  // 6. Find the open artwork details from our live state array
   const currentArtwork = lightbox 
     ? galleryData.find((a) => a.id === lightbox) 
     : null;
 
   return (
     <div className="app-container">
+      {/* Background grain effects overlay */}
       <Noise />
       
       <Navbar scrolled={scrolled} galleryRef={galleryRef} />
@@ -85,18 +96,20 @@ export default function VanGoVirtual() {
             ref={galleryRef}
           />
         ) : (
-          <div style={{ color: "white", textAlign: "center", padding: "5rem" }}>
-            Loading collection...
+          <div style={{ color: "white", textAlign: "center", padding: "5rem" }} className="mono">
+            Loading dynamic collection...
           </div>
         )}
       </main>
 
+      {/* Stay-In-Place Overlay with active bidding injection */}
       {currentArtwork && (
         <Lightbox 
           artwork={currentArtwork} 
           onClose={() => setLightbox(null)} 
           onNext={() => navigateLightbox(1)}
           onPrev={() => navigateLightbox(-1)}
+          onPlaceBid={handlePlaceBid}
         />
       )}
       
