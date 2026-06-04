@@ -40,4 +40,4 @@ Here is a preview of the virtual gallery space in action:
 
 ---
 
-* **more features coming, stay tuned**
+*    **more features coming, stay tuned**
